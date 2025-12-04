@@ -4,56 +4,126 @@ import tensorflow as tf
 from PIL import Image
 import numpy as np
 import requests
-import io
 import os
+import io
 
 app = FastAPI()
 
-MODEL_CACHE = "cached_models"
-os.makedirs(MODEL_CACHE, exist_ok=True)
+# Temporary storage folder on Render
+TEMP_DIR = "temp_files"
+os.makedirs(TEMP_DIR, exist_ok=True)
 
 
-def download_model(url: str):
-    file_name = url.split("/")[-1].split("?")[0]
-    local_path = f"{MODEL_CACHE}/{file_name}"
+# -------------------------------
+# Helper: Download file from URL
+# -------------------------------
+def download_file(url, save_path):
+    r = requests.get(url, allow_redirects=True)
+    if r.status_code != 200:
+        raise Exception(f"Failed to download from {url}")
+    with open(save_path, "wb") as f:
+        f.write(r.content)
+    return save_path
 
-    if not os.path.exists(local_path):
-        r = requests.get(url)
-        with open(local_path, "wb") as f:
-            f.write(r.content)
 
-    return local_path
-
-
-def preprocess(image_bytes, model):
+# -------------------------------
+# Helper: Preprocess image
+# -------------------------------
+def preprocess_image(image_bytes, model):
     img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+
+    # Model input shape → (None, H, W, 3)
     _, h, w, _ = model.input_shape
     img = img.resize((w, h))
 
     arr = np.array(img) / 255.0
-    arr = np.expand_dims(arr, 0)
+    arr = np.expand_dims(arr, axis=0)
     return arr
 
 
+# -------------------------------
+# Helper: Load labels if provided
+# -------------------------------
+def load_labels(labels_path):
+    if not os.path.exists(labels_path):
+        return None
+
+    with open(labels_path, "r") as f:
+        labels = [line.strip() for line in f.readlines() if line.strip()]
+    
+    return labels if len(labels) > 0 else None
+
+
+# -------------------------------
+# Prediction API
+# -------------------------------
 @app.post("/predict")
-async def predict(image: UploadFile = File(...), model_url: str = Form(...)):
-    model_path = download_model(model_url)
-    model = tf.keras.models.load_model(model_path)
+async def predict(
+    image: UploadFile = File(...),
+    model_url: str = Form(...),
+    labels_url: str = Form(None)   # Optional
+):
+    try:
+        # -------------------------------
+        # 1. DOWNLOAD MODEL
+        # -------------------------------
+        model_path = os.path.join(TEMP_DIR, "model.h5")
+        download_file(model_url, model_path)
 
-    img_bytes = await image.read()
-    processed = preprocess(img_bytes, model)
+        # Load model
+        model = tf.keras.models.load_model(model_path)
 
-    pred = model.predict(processed)
-    cls = int(np.argmax(pred))
-    conf = float(np.max(pred))
+        # -------------------------------
+        # 2. DOWNLOAD LABELS (OPTIONAL)
+        # -------------------------------
+        labels = None
+        if labels_url:
+            labels_path = os.path.join(TEMP_DIR, "labels.txt")
+            download_file(labels_url, labels_path)
+            labels = load_labels(labels_path)
 
-    return {"predicted_class": cls, "confidence": conf}
+        # -------------------------------
+        # 3. PROCESS IMAGE
+        # -------------------------------
+        image_bytes = await image.read()
+        processed = preprocess_image(image_bytes, model)
+
+        # -------------------------------
+        # 4. PREDICT
+        # -------------------------------
+        preds = model.predict(processed)
+        predicted_class = int(np.argmax(preds))
+        confidence = float(np.max(preds))
+
+        # -------------------------------
+        # 5. MAP LABELS
+        # -------------------------------
+        if labels and predicted_class < len(labels):
+            label = labels[predicted_class]
+        else:
+            label = f"class_{predicted_class}"
+
+        return {
+            "label": label,
+            "confidence": confidence,
+            "model_used": model_url,
+            "labels_used": labels_url if labels_url else "No labels.txt provided"
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
 
 
+# -------------------------------
+# Root Test
+# -------------------------------
 @app.get("/")
-def home():
-    return {"msg": "Backend running!"}
+async def home():
+    return {"message": "Cloud Model Runner Backend Working!"}
 
 
+# -------------------------------
+# Run server
+# -------------------------------
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
