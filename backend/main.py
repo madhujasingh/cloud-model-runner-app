@@ -14,8 +14,8 @@ TEMP_DIR = "temp_files"
 os.makedirs(TEMP_DIR, exist_ok=True)
 
 
-# -------------------------------
-# Helper: Download file from URL
+
+#  Download file from URL
 # -------------------------------
 def download_file(url, save_path):
     r = requests.get(url, allow_redirects=True)
@@ -26,8 +26,8 @@ def download_file(url, save_path):
     return save_path
 
 
-# -------------------------------
-# Helper: Preprocess image
+
+# Preprocess image
 # -------------------------------
 def preprocess_image(image_bytes, model):
     img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
@@ -105,9 +105,7 @@ async def predict(
 
         return {
             "label": label,
-            "confidence": confidence,
-            "model_used": model_url,
-            "labels_used": labels_url if labels_url else "No labels.txt provided"
+            "confidence": confidence
         }
 
     except Exception as e:
