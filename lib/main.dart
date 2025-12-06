@@ -29,7 +29,7 @@ class HomeScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.pinkAccent),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 219, 180, 193)),
               child: Text("Upload Model"),
               onPressed: () {
                 Navigator.push(
@@ -40,7 +40,7 @@ class HomeScreen extends StatelessWidget {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.pinkAccent),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 219, 180, 193)),
               child: Text("Predict Image"),
               onPressed: () {
                 Navigator.push(
