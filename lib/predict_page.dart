@@ -19,7 +19,7 @@ class _PredictPageState extends State<PredictPage> {
   bool loading = false;
 
   // Backend endpoint on Render
-  final String backendUrl = "https://cloud-model-runner-app.onrender.com/predict";
+  final String backendUrl = ""; //private
 
   Future pickImage() async {
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -55,15 +55,15 @@ class _PredictPageState extends State<PredictPage> {
     try {
       var request = http.MultipartRequest("POST", Uri.parse(backendUrl));
 
-      // REQUIRED 
+      // req
       request.fields["model_url"] = UploadModelPage.uploadedModelUrl;
 
-      // OPTIONAL 
+      // optional
       if (UploadModelPage.uploadedLabelsUrl != null) {
         request.fields["labels_url"] = UploadModelPage.uploadedLabelsUrl!;
       }
 
-      // IMAGE file
+      // img file
       request.files.add(await http.MultipartFile.fromPath(
         "image",
         imageFile!.path,
@@ -100,7 +100,7 @@ class _PredictPageState extends State<PredictPage> {
         padding: EdgeInsets.all(20),
         child: Column(
           children: [
-            // IMAGE PICKER
+            // img picker
             GestureDetector(
               onTap: pickImage,
               child: Container(
@@ -150,7 +150,7 @@ class _PredictPageState extends State<PredictPage> {
 
             SizedBox(height: 20),
 
-            // INFO
+            // info
             Text(
               "If no labels file is uploaded, prediction shows class numbers (0,1,2...).",
               textAlign: TextAlign.center,

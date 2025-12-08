@@ -12,7 +12,7 @@ class UploadModelPage extends StatefulWidget {
 
   // custom bucket
   static const String customBucketUrl =
-      "gs://ml-cloud-runner-app.firebasestorage.app";
+      " "; // private
 
   @override
   State<UploadModelPage> createState() => _UploadModelPageState();
@@ -89,9 +89,7 @@ class _UploadModelPageState extends State<UploadModelPage> {
     setState(() {});
   }
 
-  // ------------------------------------------------
-  // UI
-  // ------------------------------------------------
+//ui
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,7 +98,7 @@ class _UploadModelPageState extends State<UploadModelPage> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // Upload ML MODEL (Required)
+            // Upload model 
             ElevatedButton(
               onPressed: () => uploadToFirebase(
                 isModel: true,
@@ -120,7 +118,7 @@ class _UploadModelPageState extends State<UploadModelPage> {
 
             SizedBox(height: 40),
 
-            // Upload LABELS (.txt) 
+            // Upload labels (.txt) 
             ElevatedButton(
               onPressed: () => uploadToFirebase(
                 isModel: false,
