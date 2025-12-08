@@ -10,7 +10,7 @@ class UploadModelPage extends StatefulWidget {
   // Global labels URL (OPTIONAL)
   static String? uploadedLabelsUrl;
 
-  // Your custom bucket
+  // custom bucket
   static const String customBucketUrl =
       "gs://ml-cloud-runner-app.firebasestorage.app";
 
