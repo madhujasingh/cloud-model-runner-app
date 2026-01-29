@@ -1,7 +1,7 @@
 # Cloud Deep Learning Model Runner App  
 
-A cross-platform Flutter application designed to upload, run, and manage trained deep learning models in a **cloud-based environment**.  
-This project simplifies the process of testing and deploying AI models without local hardware setup, using **FastAPI**, **TensorFlow**, and **Firebase**.
+A cross-platform Flutter application designed to upload, run, and manage trained deep learning models in a cloud based environment.  
+This project simplifies the process of testing and deploying AI models without local hardware setup, using FastAPI, TensorFlow, and Firebase.
 
 ---
 
